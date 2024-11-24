@@ -1,4 +1,3 @@
-import requests
 import re
 from bs4 import BeautifulSoup
 
@@ -22,8 +21,8 @@ class Api:
     }
     self.__media_pattern = r'https?:\/\/([sv]\d+\.erome\.com)(\/[^\s]*)?(\?[^#\s]*)?'
 
-  def __get_album_data(self, keyword, page):
-    url = f"https://www.erome.com/search?q={keyword}&page={page}"
+  def __get_album_data(self, page, keyword=""):
+    url = f"https://www.erome.com/explore?page={page}" if not keyword else f"https://www.erome.com/search?q={keyword}&page={page}"
     response = self.__session.get(url, headers=self.__headers)
     content = []
 
@@ -140,11 +139,56 @@ class Api:
     elif not isinstance(limit, int) or limit <=0:
       raise Exception("'limit' should be an integer value and greater than or equal to 1.")
 
+    elif not isinstance(keyword, str):
+      raise Exception("'url' should be an string.")
+
     elif page > limit:
       raise Exception("'page' should not be a value greater than 'limit'.")
 
     while page <= limit:
-      content.extend(self.__get_album_data(keyword, page))
+      content.extend(self.__get_album_data(page, keyword=keyword))
+      page += 1
+
+    return content
+
+  def get_all_album_data(self, keyword, page=1, limit=1):
+    keyword = keyword.strip()
+    keyword = re.sub(r'\s{2,}', ' ', keyword)
+    keyword = keyword.replace(' ', '+')
+    content = []
+
+    if not isinstance(page, int) or page <= 0:
+      raise Exception("'page' should be an integer value and greater than or equal to 1.")
+
+    elif not isinstance(limit, int) or limit <=0:
+      raise Exception("'limit' should be an integer value and greater than or equal to 1.")
+
+    elif not isinstance(keyword, str):
+      raise Exception("'url' should be an string.")
+
+    elif page > limit:
+      raise Exception("'page' should not be a value greater than 'limit'.")
+
+    while page <= limit:
+      content.extend(self.__get_album_data(page, keyword=keyword))
+      page += 1
+
+    return content
+
+  def get_explore(self, page=1, limit=1):
+    content = []
+
+    if not isinstance(page, int) or page <= 0:
+      raise Exception("'page' should be an integer value and greater than or equal to 1.")
+
+    elif not isinstance(limit, int) or limit <=0:
+      raise Exception("'limit' should be an integer value and greater than or equal to 1.")
+
+    elif page > limit:
+      raise Exception("'page' should not be a value greater than 'limit'.")
+
+    while page <= limit:
+      content.extend(self.__get_album_data(page))
       page += 1
 
     return content
