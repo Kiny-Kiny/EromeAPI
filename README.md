@@ -1,6 +1,13 @@
 # EromeAPI
 A simple erome wrapper
 
+# What this wrapper can do?
+
+- [x] Access url content
+- [x] Search using keywords
+- [x] Access album content
+- [x] Access your account
+
 # Example code:
 ```
 from api import Api
