@@ -7,6 +7,9 @@ A simple erome wrapper
 - [x] Search using keywords
 - [x] Access album content
 - [ ] Access your account
+- [ ] Upload files
+- [ ] Edit posts
+- [ ] Comment on any post
 
 # Example code:
 ```
