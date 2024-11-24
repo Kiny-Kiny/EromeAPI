@@ -6,7 +6,7 @@ A simple erome wrapper
 - [x] Access url content
 - [x] Search using keywords
 - [x] Access album content
-- [x] Access your account
+- [] Access your account
 
 # Example code:
 ```
