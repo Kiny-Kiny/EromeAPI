@@ -1,5 +1,5 @@
-import re
 import requests
+import re
 from bs4 import BeautifulSoup
 
 class Api:
@@ -21,9 +21,15 @@ class Api:
       "accept-language": "en-US,en;q=0.9",
     }
     self.__media_pattern = r'https?:\/\/([sv]\d+\.erome\.com)(\/[^\s]*)?(\?[^#\s]*)?'
+    self.__version_list = ["all", "straight", "trans", "gay", "hentai"]
 
-  def __get_album_data(self, page, keyword=""):
-    url = f"https://www.erome.com/explore?page={page}" if not keyword else f"https://www.erome.com/search?q={keyword}&page={page}"
+  def __get_album_data(self, page, keyword="", new=None):
+    if not keyword:
+      url = f"https://www.erome.com/explore/new?page={page}" if new else f"https://www.erome.com/explore?page={page}"
+
+    else:
+      url = f"https://www.erome.com/search?q={keyword}&page={page}"
+
     response = self.__session.get(url, headers=self.__headers)
     content = []
 
@@ -46,6 +52,17 @@ class Api:
               "url": album_url})
 
     return content
+
+  def change_version_content(self, version):
+    if not isinstance(version, str):
+      raise Exception("'version' should be an string.")
+
+    version = version.strip().lower()
+    if not version in self.__version_list:
+      raise Exception(f"'version' should be in {self.__version_list}")
+
+    url = f"https://www.erome.com/version/{version}"
+    response = self.__session.get(url, headers=self.__headers)
 
   def get_album_content(self, path):
     path = path.strip()
@@ -77,9 +94,12 @@ class Api:
 
     return content
 
-  def get_content(self, url):
+  def get_content(self, url, max_video_bytes=0):
     if not isinstance(url, str):
-      raise Exception("'url' should be and string.")
+      raise Exception("'url' should be an string.")
+
+    elif not isinstance(max_video_bytes, int):
+      raise Exception("'max_video_bytes' should be an integer.")
 
     match = re.search(self.__media_pattern, url)
     if not match:
@@ -118,7 +138,7 @@ class Api:
         "Sec-Fetch-Dest": "video",
         "Referer": "https://www.erome.com/",
         "Accept-Language": "en-US,en;q=0.9",
-        "Range": "bytes=0-"
+        "Range": "bytes=0-" + str(max_video_bytes - 1) if max_video_bytes > 1 else ""
       }
 
     response = self.__session.get(url, headers=headers)
@@ -152,10 +172,7 @@ class Api:
 
     return content
 
-  def get_all_album_data(self, keyword, page=1, limit=1):
-    keyword = keyword.strip()
-    keyword = re.sub(r'\s{2,}', ' ', keyword)
-    keyword = keyword.replace(' ', '+')
+  def get_explore(self, page=1, limit=1, new=False):
     content = []
 
     if not isinstance(page, int) or page <= 0:
@@ -164,32 +181,14 @@ class Api:
     elif not isinstance(limit, int) or limit <=0:
       raise Exception("'limit' should be an integer value and greater than or equal to 1.")
 
-    elif not isinstance(keyword, str):
-      raise Exception("'url' should be an string.")
+    elif not isinstance(new, bool):
+      raise Exception("'new' should be an bool value.")
 
     elif page > limit:
       raise Exception("'page' should not be a value greater than 'limit'.")
 
     while page <= limit:
-      content.extend(self.__get_album_data(page, keyword=keyword))
-      page += 1
-
-    return content
-
-  def get_explore(self, page=1, limit=1):
-    content = []
-
-    if not isinstance(page, int) or page <= 0:
-      raise Exception("'page' should be an integer value and greater than or equal to 1.")
-
-    elif not isinstance(limit, int) or limit <=0:
-      raise Exception("'limit' should be an integer value and greater than or equal to 1.")
-
-    elif page > limit:
-      raise Exception("'page' should not be a value greater than 'limit'.")
-
-    while page <= limit:
-      content.extend(self.__get_album_data(page))
+      content.extend(self.__get_album_data(page, new=new))
       page += 1
 
     return content
