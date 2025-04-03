@@ -16,6 +16,8 @@ A simple erome wrapper
 ```
 from api import Api
 
+api = Api()
+
 api.get_all_album_data("keyword")
 
 api.get_album_content("album code") # This will return all url videos and photos. Example: api.get_album_content("RHoERFQP")
